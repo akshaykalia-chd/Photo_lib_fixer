@@ -22,6 +22,11 @@ def question(message):
     u_sel = wx.MessageBox(message, 'Question?', wx.YES_NO | wx.NO_DEFAULT | wx.ICON_EXCLAMATION)
     return u_sel
 
+# warning dialog
+def warning(message):
+    wx.MessageBox(message, 'Warning', wx.OK | wx.ICON_WARNING)
+    return
+
 def read_dateTaekn(file):
     months_name = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     cmy = []
@@ -147,25 +152,30 @@ def unique_list(list):
     return unique_list
 
 def remove_small_files(file_list, size):
+    for file in file_list:
+        file_szie = os.path.getsize(file)
+        if file_szie <= size:
+            os.remove(file)
+
+def small_file_count(file_list, size):
     count = 0
     for file in file_list:
         file_szie = os.path.getsize(file)
         if file_szie <= size:
             print(file, ":", file_szie)
             count = count + 1
-    print("Number of Files Found:", count)
-    for file in file_list:
-        file_szie = os.path.getsize(file)
-        if file_szie <= size:
-            os.remove(file)
+    message = "Number of small files Found:" + str(count)
+    warning(message)
 
 app = wx.App()
 app.MainLoop()
 current_path = get_dir("Photo Library Location")
 size = get_size()
+file_list = get_files(current_path)
+small_file_count(file_list, size)
 message = "Are you sure you want to remove all files smaller than "+str(size)+" bytes?"
 if question(message) == 2:
-    remove_small_files(get_files(current_path), size)
+    remove_small_files(file_list, size)
 pre_new_dir_struc(current_path)
 move_to_cmy_dir(get_files(current_path), current_path)
 app.ExitMainLoop()
