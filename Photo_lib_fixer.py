@@ -1,4 +1,10 @@
-import os, time, shutil, datetime, exifread, wx
+import datetime
+import os
+import shutil
+import time
+
+import exifread
+import wx
 
 
 # Get Dir dialog
@@ -84,7 +90,14 @@ def move_to_cmy_dir(file_list, path, type):
 
 
 def pre_new_dir_struc(path, file_list, type):
-    fixed_path = path + "/" + "Structured/" + type + "/"
+    fixed_path = path + "/" + "Structured/"
+    try:
+        os.mkdir(fixed_path)
+    except FileExistsError:
+        print("file/Directory already exists")
+
+    fixed_path = fixed_path + type + "/"
+
     try:
         os.mkdir(fixed_path)
     except FileExistsError:
@@ -180,6 +193,7 @@ def small_file_count(file_list, size):
             count = count + 1
     message = "Number of small files Found: " + str(count)
     warning(message)
+    return count
 
 
 def filter_image_files(file_list):
@@ -197,7 +211,7 @@ def filter_image_files(file_list):
 def filter_video_files(file_list):
     video_files = list()
     ext_list = [".webm", ".mpg", ".mp2", ".mpeg", ".mpe", ".mpv", ".ogg", ".mp4", ".m4p", ".m4v", ".avi", ".wmv",
-                ".mov", ".qt", ".flv", ".swf", ".mkv.", ".rm"]
+                ".mov", ".qt", ".flv", ".swf", ".mkv.", ".rm", ".3gp"]
     for file in file_list:
         file_ext = os.path.splitext(file)[1]
         if file_ext.lower() in ext_list:
@@ -208,10 +222,10 @@ def filter_video_files(file_list):
 def filter_other_files(file_list):
     other_files = list()
     ext_list = [".webm", ".mpg", ".mp2", ".mpeg", ".mpe", ".mpv", ".ogg", ".mp4", ".m4p", ".m4v", ".avi", ".wmv",
-                ".mov", ".qt", ".flv", ".swf", ".mkv.", ".rm", ".jpg", ".jpeg", ".jpe.jif", ".jfif", ".jfi", ".png",
-                ".gif", ".webp", ".tiff", ".tif", ".psd", ".raw", ".arw", ".cr2", ".nrw", ".k25", ".bmp", ".dib",
-                ".heif", ".heic", ".ind", ".indd", ".indt", ".jp2", ".j2k", ".jpf", ".jpx", ".jpm", ".mj2", ".svg",
-                ".svgz", ".ai", ".eps"]
+                ".mov", ".qt", ".flv", ".swf", ".mkv.", ".rm", ".3gp", ".jpg", ".jpeg", ".jpe.jif", ".jfif", ".jfi",
+                ".png", ".gif", ".webp", ".tiff", ".tif", ".psd", ".raw", ".arw", ".cr2", ".nrw", ".k25", ".bmp",
+                ".dib", ".heif", ".heic", ".ind", ".indd", ".indt", ".jp2", ".j2k", ".jpf", ".jpx", ".jpm", ".mj2",
+                ".svg", ".svgz", ".ai", ".eps"]
     for file in file_list:
         file_ext = os.path.splitext(file)[1]
         if file_ext.lower() not in ext_list:
@@ -224,11 +238,11 @@ app.MainLoop()
 current_path = get_dir("Photo Library Location")
 size = get_size()
 file_list = get_files(current_path)
-small_file_count(file_list, size)
-message = "Are you sure you want to remove all files smaller than " + str(size) + " bytes?"
-if question(message) == 2:
-    remove_small_files(file_list, size)
-
+if small_file_count(file_list, size) > 0:
+    message = "Are you sure you want to remove all files smaller than " + str(size) + " bytes?"
+    if question(message) == 2:
+        remove_small_files(file_list, size)
+file_list = get_files(current_path)
 file_type = "Photos"
 image_files = filter_image_files(file_list)
 pre_new_dir_struc(current_path, image_files, file_type)
